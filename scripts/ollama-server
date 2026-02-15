@@ -1,0 +1,5 @@
+#!/bin/bash
+cd "$(dirname "$0")/.."
+source .env
+PORT=$(echo "$OLLAMA_BASE_URL" | sed -E 's|.*:([0-9]+)|\1|')
+OLLAMA_HOST="127.0.0.1:$PORT" ollama serve
