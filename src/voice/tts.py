@@ -10,6 +10,16 @@ class PiperTTS:
         self.model_path = model_path
         self.config_path = config_path
         self.piper_path = self._find_piper()
+        self.sample_rate = self._get_sample_rate()
+    
+    def _get_sample_rate(self) -> int:
+        try:
+            import json
+            with open(self.config_path, 'r') as f:
+                config = json.load(f)
+            return config.get('audio', {}).get('sample_rate', 22050)
+        except Exception:
+            return 22050
     
     def _find_piper(self) -> Optional[str]:
         import sys
@@ -42,27 +52,44 @@ class PiperTTS:
         
         def _speak():
             try:
+                import pygame
+                import numpy as np
+                
+                pygame.mixer.init(frequency=self.sample_rate)
+                
                 piper_cmd = self._find_piper()
+                print(f"Using piper: {piper_cmd}", flush=True)
+                
                 process = subprocess.Popen(
-                    [piper_cmd, "--model", str(self.model_path), "--config", str(self.config_path)],
+                    [piper_cmd, 
+                     "--model", str(self.model_path), 
+                     "--config", str(self.config_path),
+                     "--output-raw"],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE
                 )
-                wav_data, _ = process.communicate(input=text.encode("utf-8"))
+                raw_audio, stderr = process.communicate(input=text.encode("utf-8"))
                 
-                import sounddevice as sd
-                import numpy as np
-                import wave
+                if stderr:
+                    print(f"Piper stderr: {stderr.decode('utf-8', errors='replace')}", flush=True)
                 
-                with wave.open(io.BytesIO(wav_data), "rb") as wf:
-                    sample_rate = wf.getframerate()
-                    frames = wf.readframes(wf.getnframes())
-                    audio = np.frombuffer(frames, dtype=np.int16)
-                    audio = audio.astype(np.float32) / 32768.0
+                if not raw_audio:
+                    print("TTS Error: No audio data returned", flush=True)
+                    return
                 
-                sd.play(audio, sample_rate)
-                sd.wait()
+                audio = np.frombuffer(raw_audio, dtype=np.int16)
+                
+                if audio.ndim == 1:
+                    audio = np.column_stack((audio, audio))
+                
+                print(f"Playing audio: {len(audio)} samples at {self.sample_rate}Hz", flush=True)
+                
+                sound = pygame.sndarray.make_sound(audio)
+                pygame.mixer.Sound.play(sound)
+                while pygame.mixer.get_busy():
+                    pygame.time.wait(100)
+                print("Audio playback complete", flush=True)
                 
             except Exception as e:
                 print(f"TTS Error: {e}", flush=True)

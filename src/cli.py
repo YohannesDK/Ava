@@ -75,6 +75,9 @@ def talk_mode(client: OllamaClient, storage: Storage, conversation_id: int):
     print("\n[Talk mode enabled - Ava will speak her responses]", flush=True)
     print("Type 'stop' to return to silent mode\n", flush=True)
     
+    import pygame
+    pygame.mixer.init()
+    
     tts.init_piper()
     
     while True:
