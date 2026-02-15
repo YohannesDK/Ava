@@ -74,6 +74,6 @@ coverage.xml
 # Ruff / linting
 .ruff_cache/
 
-# PyCharm
-.idea/
+# Logs
+logs/*.log
 

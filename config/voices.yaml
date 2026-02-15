@@ -1,0 +1,5 @@
+default: en_GB-aru-medium
+
+voices:
+  en_GB-aru-medium:
+    description: "British female voice - medium quality"
