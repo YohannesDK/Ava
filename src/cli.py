@@ -1,17 +1,40 @@
 import sys
-from src.core.config import load_config
+from src.core.config import load_config, get_available_personalities, get_default_personality, get_personality_system_prompt
 from src.core.llm import OllamaClient
 from src.core.storage import Storage
+
+
+def select_personality():
+    personalities = get_available_personalities()
+    default = get_default_personality()
+    
+    print("Available personalities:", ", ".join(personalities), flush=True)
+    print(f"Default: {default}", flush=True)
+    
+    while True:
+        choice = input("Select personality (press Enter for default): ").strip().lower()
+        
+        if not choice:
+            return default
+        
+        if choice in personalities:
+            return choice
+        
+        print(f"Invalid choice. Available: {', '.join(personalities)}", flush=True)
 
 
 def main():
     load_config()
     
-    storage = Storage()
-    client = OllamaClient()
-    
     print("Ava - Personal Assistant", flush=True)
     print("Type 'exit' to quit, 'new' for new conversation\n", flush=True)
+    
+    personality = select_personality()
+    system_prompt = get_personality_system_prompt(personality)
+    print(f"Personality: {personality}\n", flush=True)
+    
+    storage = Storage()
+    client = OllamaClient(system_prompt=system_prompt)
     
     conversation_id = storage.create_conversation()
     

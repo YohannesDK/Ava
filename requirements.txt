@@ -1,3 +1,5 @@
 python-dotenv
 ollama
 sqlalchemy
+pyyaml
+requests
