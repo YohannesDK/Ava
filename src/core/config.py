@@ -37,6 +37,22 @@ def get_personality_system_prompt(personality: str) -> str:
         return personalities[personality].get("system_prompt", "")
     return ""
 
+def get_personality_voice(personality: str) -> str:
+    config = _load_personality_config()
+    personalities = config.get("personalities", {})
+    if personality in personalities:
+        voice = personalities[personality].get("voice", "")
+        if voice:
+            return voice
+    return get_default_voice()
+
+def get_personality_name(personality: str) -> str:
+    config = _load_personality_config()
+    personalities = config.get("personalities", {})
+    if personality in personalities:
+        return personalities[personality].get("name", "Ava")
+    return "Ava"
+
 def _load_voices_config():
     with open(VOICES_FILE, "r") as f:
         return yaml.safe_load(f)

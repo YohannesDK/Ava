@@ -1,5 +1,11 @@
-default: en_GB-aru-medium
+default: en_GB-cori-high
 
 voices:
   en_GB-aru-medium:
     description: "British female voice - medium quality"
+  
+  en_GB-cori-high:
+    description: "British female voice - high quality (recommended)"
+  
+  jarvis-medium:
+    description: "Jarvis voice from Iron Man - medium quality"

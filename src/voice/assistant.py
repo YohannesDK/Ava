@@ -1,5 +1,5 @@
 import sys
-from src.core.config import load_config, get_available_personalities, get_default_personality, get_personality_system_prompt, get_ollama_url, get_default_model
+from src.core.config import load_config, get_available_personalities, get_default_personality, get_personality_system_prompt, get_personality_voice, get_ollama_url, get_default_model
 from src.core.llm import OllamaClient
 from src.core.storage import Storage
 from src.core.logger import init_logging, log_config, log_error, get_log_file_path
@@ -72,14 +72,15 @@ def voice_mode(client: OllamaClient, storage: Storage, conversation_id: int):
             print(f"Error: {e}", flush=True)
 
 
-def talk_mode(client: OllamaClient, storage: Storage, conversation_id: int):
-    print("\n[Talk mode enabled - Ava will speak her responses]", flush=True)
+def talk_mode(client: OllamaClient, storage: Storage, conversation_id: int, voice: str):
+    print(f"\n[Talk mode enabled - Ava will speak her responses]", flush=True)
     print("Type 'stop' to return to silent mode\n", flush=True)
     
     import pygame
-    pygame.mixer.init()
+    # pygame.mixer.init(frequency=22050)
+    pygame.mixer.init(frequency=44100, size=-16, channels=2)
     
-    tts.init_piper()
+    tts.init_piper(voice)
     
     while True:
         try:
@@ -122,12 +123,14 @@ def main():
     
     personality = select_personality()
     system_prompt = get_personality_system_prompt(personality)
-    print(f"Personality: {personality}\n", flush=True)
+    voice = get_personality_voice(personality)
+    print(f"Personality: {personality} | Voice: {voice}\n", flush=True)
     
     logger = init_logging(personality)
     
     config = {
         "personality": personality,
+        "voice": voice,
         "ollama_url": get_ollama_url(),
         "model": get_default_model(),
         "log_file": str(get_log_file_path())
@@ -166,7 +169,7 @@ def main():
                 continue
             
             if user_input.lower() == "talk":
-                talk_mode(client, storage, conversation_id)
+                talk_mode(client, storage, conversation_id, voice)
                 continue
             
             if not user_input:

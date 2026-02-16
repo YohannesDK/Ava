@@ -11,6 +11,10 @@ class PiperTTS:
         self.config_path = config_path
         self.piper_path = self._find_piper()
         self.sample_rate = self._get_sample_rate()
+        
+        import pygame
+        pygame.init()
+        pygame.mixer.init(frequency=self.sample_rate, size=-16, channels=1)
     
     def _get_sample_rate(self) -> int:
         try:
@@ -55,7 +59,10 @@ class PiperTTS:
                 import pygame
                 import numpy as np
                 
-                pygame.mixer.init(frequency=self.sample_rate)
+                # Re-init mixer for mono to ensure it works
+                pygame.mixer.init(frequency=self.sample_rate, size=-16, channels=1, allowedchanges=0)
+                pygame.mixer.quit()
+                pygame.mixer.init(frequency=self.sample_rate, size=-16, channels=1, allowedchanges=0)
                 
                 piper_cmd = self._find_piper()
                 print(f"Using piper: {piper_cmd}", flush=True)
@@ -64,7 +71,8 @@ class PiperTTS:
                     [piper_cmd, 
                      "--model", str(self.model_path), 
                      "--config", str(self.config_path),
-                     "--output-raw"],
+                     "--output-raw",
+                     "--length-scale", "1.0"],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE
@@ -78,12 +86,10 @@ class PiperTTS:
                     print("TTS Error: No audio data returned", flush=True)
                     return
                 
+                # Play mono directly (no stereo conversion)
                 audio = np.frombuffer(raw_audio, dtype=np.int16)
                 
-                if audio.ndim == 1:
-                    audio = np.column_stack((audio, audio))
-                
-                print(f"Playing audio: {len(audio)} samples at {self.sample_rate}Hz", flush=True)
+                print(f"Playing audio: {len(audio)} samples at {self.sample_rate}Hz (mono)", flush=True)
                 
                 sound = pygame.sndarray.make_sound(audio)
                 pygame.mixer.Sound.play(sound)
