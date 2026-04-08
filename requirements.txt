@@ -3,3 +3,8 @@ ollama
 sqlalchemy
 pyyaml
 requests
+faster-whisper
+piper-tts
+sounddevice
+numpy
+pygame

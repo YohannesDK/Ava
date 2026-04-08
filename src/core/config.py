@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 PROJECT_ROOT = Path(__file__).parent.parent
 ENV_FILE = PROJECT_ROOT / ".env"
 PERSONALITY_FILE = PROJECT_ROOT.parent / "config" / "personality.yaml"
+VOICES_FILE = PROJECT_ROOT.parent / "config" / "voices.yaml"
+VOICES_DIR = PROJECT_ROOT.parent / "voices"
 
 def load_config():
     load_dotenv(ENV_FILE)
@@ -34,3 +36,33 @@ def get_personality_system_prompt(personality: str) -> str:
     if personality in personalities:
         return personalities[personality].get("system_prompt", "")
     return ""
+
+def get_personality_voice(personality: str) -> str:
+    config = _load_personality_config()
+    personalities = config.get("personalities", {})
+    if personality in personalities:
+        voice = personalities[personality].get("voice", "")
+        if voice:
+            return voice
+    return get_default_voice()
+
+def get_personality_name(personality: str) -> str:
+    config = _load_personality_config()
+    personalities = config.get("personalities", {})
+    if personality in personalities:
+        return personalities[personality].get("name", "Ava")
+    return "Ava"
+
+def _load_voices_config():
+    with open(VOICES_FILE, "r") as f:
+        return yaml.safe_load(f)
+
+def get_default_voice() -> str:
+    config = _load_voices_config()
+    return config.get("default", "en_GB-aru-medium")
+
+def get_voice_path(voice_name: str) -> tuple[Path, Path]:
+    config = _load_voices_config()
+    model_file = VOICES_DIR / f"{voice_name}.onnx"
+    config_file = VOICES_DIR / f"{voice_name}.onnx.json"
+    return model_file, config_file

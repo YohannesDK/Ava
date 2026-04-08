@@ -74,6 +74,13 @@ coverage.xml
 # Ruff / linting
 .ruff_cache/
 
-# PyCharm
-.idea/
+# Logs
+logs/*.log
+
+# Voice models (onnx files - too large for git)
+voices/*.onnx
+
+# Debug files
+debug_output.wav
+*.wav
 
