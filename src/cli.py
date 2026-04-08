@@ -26,12 +26,12 @@ def select_personality():
         print(f"Invalid choice. Available: {', '.join(personalities)}", flush=True)
 
 
-def voice_mode(client: OllamaClient, storage: Storage, conversation_id: int):
+def voice_mode(client: OllamaClient, storage: Storage, conversation_id: int, voice: str):
     print("\n[Voice mode activated]", flush=True)
     print("Press Enter to start recording, type 'stop' to return to text mode\n", flush=True)
     
     stt.init_whisper("small")
-    tts.init_piper()
+    tts.init_piper(voice)
     
     while True:
         try:
@@ -62,7 +62,7 @@ def voice_mode(client: OllamaClient, storage: Storage, conversation_id: int):
             print(f"Ava: {response}\n", flush=True)
             
             print("Speaking...", flush=True)
-            tts.speak(response)
+            tts.speak(response, blocking=True)
             
         except KeyboardInterrupt:
             print("\n[Voice mode deactivated]", flush=True)
@@ -74,9 +74,6 @@ def voice_mode(client: OllamaClient, storage: Storage, conversation_id: int):
 def talk_mode(client: OllamaClient, storage: Storage, conversation_id: int, voice: str):
     print(f"\n[Talk mode enabled - Ava will speak her responses]", flush=True)
     print("Type 'stop' to return to silent mode\n", flush=True)
-    
-    import pygame
-    pygame.mixer.init()
     
     tts.init_piper(voice)
     
@@ -106,7 +103,7 @@ def talk_mode(client: OllamaClient, storage: Storage, conversation_id: int, voic
             print(f"Ava: {response}\n", flush=True)
             
             print("Speaking...", flush=True)
-            tts.speak(response)
+            tts.speak(response, blocking=True)
             
         except KeyboardInterrupt:
             print("\nGoodbye!", flush=True)
@@ -158,7 +155,7 @@ def main():
                 continue
             
             if user_input.lower() == "voice":
-                voice_mode(client, storage, conversation_id)
+                voice_mode(client, storage, conversation_id, voice)
                 continue
             
             if user_input.lower() == "talk":
